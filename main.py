@@ -7,8 +7,8 @@ if not mt5.initialize():
     print("initialize() failed, error code =", mt5.last_error())
     quit()
 
-def get_data(symbol, timeframe, n_periods):
-    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, n_periods)
+def get_realtime_data(symbol, timeframe, n_periods):
+    rates = mt5.copy_rates_from(symbol, timeframe, 0, n_periods)
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'], unit='s')
     df.set_index('time', inplace=True)
@@ -108,12 +108,12 @@ def bollinger_band_squeeze(data):
     return buy_signal.astype(int) - sell_signal.astype(int)
 
 def execute_strategy(strategy_func, symbol, timeframe, n_periods):
-    data = get_data(symbol, timeframe, n_periods)
+    data = get_realtime_data(symbol, timeframe, n_periods)
     signals = strategy_func(data)
     return signals
 
 def majority_rule_decision(symbol, timeframe, n_periods):
-    data = get_data(symbol, timeframe, n_periods)
+    data = get_realtime_data(symbol, timeframe, n_periods)
     strategies = [trend_following, range_trading, breakout_trading, scalping, carry_trade, position_trading, dmac, heikin_ashi_smoothed, fibonacci_stochastic, confluence_zone_trading, pivot_point_breakout, bollinger_band_squeeze]
     strategy_signals = pd.DataFrame({strategy.__name__: execute_strategy(strategy, symbol, timeframe, n_periods) for strategy in strategies})
     candle_signals = cp.detect_patterns(data)  # Get candlestick patterns signals
